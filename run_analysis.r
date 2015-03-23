@@ -41,6 +41,20 @@ names(Feat_data) <- X_dataNames$V2
 Full_data        <- cbind(Sub_data, Act_data, Feat_data)
 #####  Part 2 - Extracts only the measurements on the mean and standard deviation for each measurement.
 ## Extraction
-# Add DPLYR library
-library("dplyr", lib.loc="~/R/win-library/3.1")
-# use Filter from dplyr
+subdata_names    <- X_dataNames$V2[grep("mean\\(\\)|std\\(\\)", X_dataNames$V2)]
+extracted_names  <- c(as.character(subdata_names), "subject", "activity" )
+SubData          <- subset(Full_data,select=extracted_names)
+##  Read Activities
+activityLabels <- read.table(file.path(PATH, "activity_labels.txt"),header = FALSE)
+##  Change Labels
+names(SubData) <- gsub("^t", "time", names(SubData))
+names(SubData) <- gsub("^f", "frequency", names(SubData))
+names(SubData) <- gsub("Acc", "Accelerometer", names(SubData))
+names(SubData) <- gsub("Gyro", "Gyroscope", names(SubData))
+names(SubData) <- gsub("Mag", "Magnitude", names(SubData))
+names(SubData) <- gsub("BodyBody", "Body", names(SubData))
+## Tidy Data
+library(plyr);
+tidydata  <- aggregate(. ~subject + activity, SubData, mean)
+tidydata  <- tidydata[order(tidydata$subject, tidydata$activity),]
+write.table(tidydata, file = "tidydata.txt",row.name=FALSE)
